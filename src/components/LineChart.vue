@@ -14,6 +14,10 @@ const props = defineProps<{
 const el = ref<HTMLElement | null>(null);
 let chart: echarts.ECharts | null = null;
 
+function handleResize() {
+  chart?.resize();
+}
+
 function render() {
   if (!chart) {
     return;
@@ -61,15 +65,13 @@ onMounted(() => {
   }
   chart = echarts.init(el.value);
   render();
-  window.addEventListener("resize", chart.resize);
+  window.addEventListener("resize", handleResize);
 });
 
 onUnmounted(() => {
-  if (chart) {
-    window.removeEventListener("resize", chart.resize);
-    chart.dispose();
-    chart = null;
-  }
+  window.removeEventListener("resize", handleResize);
+  chart?.dispose();
+  chart = null;
 });
 
 watch(() => [props.values, props.color], render, { deep: true });

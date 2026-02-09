@@ -30,23 +30,39 @@
         <input v-model.number="draft.glow_intensity" type="range" min="0" max="1" step="0.05" />
       </label>
       <label>
+        Accent color
+        <input v-model="draft.accent" type="color" />
+      </label>
+      <label>
         Sensor Boost (reserved)
         <input v-model="draft.sensor_boost_enabled" type="checkbox" />
+      </label>
+      <label>
+        History retention (days)
+        <input v-model.number="draft.history_retention_days" type="number" min="1" max="365" step="1" />
       </label>
       <button @click="save">{{ t("settings.save") }}</button>
     </article>
 
+    <article class="glass-panel control-card">
+      <h3>Modular Blocks</h3>
+      <label><input v-model="draft.module_toggles.show_cpu" type="checkbox" /> CPU</label>
+      <label><input v-model="draft.module_toggles.show_gpu" type="checkbox" /> GPU</label>
+      <label><input v-model="draft.module_toggles.show_memory" type="checkbox" /> Memory</label>
+      <label><input v-model="draft.module_toggles.show_disk" type="checkbox" /> Disk</label>
+      <label><input v-model="draft.module_toggles.show_network" type="checkbox" /> Network</label>
+    </article>
+
     <article class="glass-panel full-width">
       <h3>Speedtest Endpoints</h3>
-      <ul>
-        <li v-for="(item, idx) in draft.speedtest_endpoints" :key="item + idx">{{ item }}</li>
-      </ul>
+      <p>One URL per line</p>
+      <textarea v-model="endpointsText" rows="5"></textarea>
     </article>
   </section>
 </template>
 
 <script setup lang="ts">
-import { reactive, watch } from "vue";
+import { reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { useAppStore } from "../stores/app";
@@ -54,15 +70,24 @@ import { useAppStore } from "../stores/app";
 const store = useAppStore();
 const { t } = useI18n();
 
-const draft = reactive({ ...store.settings });
+const draft = reactive({ ...store.settings, module_toggles: { ...store.settings.module_toggles } });
+const endpointsText = ref(store.settings.speedtest_endpoints.join("\n"));
 
 watch(
   () => store.settings,
-  (next) => Object.assign(draft, next),
+  (next) => {
+    Object.assign(draft, next, { module_toggles: { ...next.module_toggles } });
+    endpointsText.value = next.speedtest_endpoints.join("\n");
+  },
   { deep: true }
 );
 
 async function save() {
-  await store.updateSettings({ ...draft });
+  const speedtest_endpoints = endpointsText.value
+    .split("\n")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+
+  await store.updateSettings({ ...draft, speedtest_endpoints });
 }
 </script>

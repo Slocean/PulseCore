@@ -1,0 +1,272 @@
+:root {
+  color-scheme: dark;
+  --bg: #050a14;
+  --card: rgba(16, 22, 34, 0.72);
+  --border: rgba(255, 255, 255, 0.12);
+  --text: #e8efff;
+  --muted: #90a3d5;
+  --primary: #2b6cee;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Space Grotesk", "Segoe UI", sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at 20% 15%, rgba(43, 108, 238, 0.25), transparent 35%),
+    radial-gradient(circle at 80% 85%, rgba(188, 19, 254, 0.2), transparent 38%), var(--bg);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  margin: 14px;
+  padding: 16px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sidebar h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.sidebar p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.sidebar nav {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar a {
+  color: var(--text);
+  text-decoration: none;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+}
+
+.sidebar a.router-link-active {
+  background: rgba(43, 108, 238, 0.2);
+  border-color: rgba(43, 108, 238, 0.4);
+}
+
+.sidebar-foot {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar button,
+.sidebar select,
+input,
+button,
+select {
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  padding: 8px 10px;
+}
+
+.content {
+  padding: 14px 14px 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.topbar {
+  padding: 12px 16px;
+  border-radius: 14px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.page-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.page-header {
+  grid-column: 1 / -1;
+  padding: 16px;
+}
+
+.page-header h2 {
+  margin: 0;
+}
+
+.page-header p {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+.metric-card,
+.stat-card,
+.control-card,
+.chart-card,
+.full-width {
+  padding: 14px;
+}
+
+.metric-card header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.metric-card p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.metric-card strong {
+  font-size: 24px;
+}
+
+.progress {
+  margin-top: 10px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.progress-inner {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(to right, #00f3ff, #bc13fe);
+}
+
+.chart-card {
+  min-height: 240px;
+}
+
+.chart {
+  width: 100%;
+  height: 190px;
+}
+
+.glass-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+  border-radius: 14px;
+}
+
+.row-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.control-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.control-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 12px;
+}
+
+.overlay-shell {
+  min-height: 100vh;
+  padding: 8px;
+}
+
+.overlay-card {
+  width: 100%;
+  max-width: 320px;
+  padding: 12px;
+}
+
+.overlay-card header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.overlay-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+@media (max-width: 1200px) {
+  .page-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    margin: 12px 12px 0;
+  }
+
+  .content {
+    padding: 12px;
+  }
+
+  .page-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+textarea {
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  padding: 8px 10px;
+  width: 100%;
+  resize: vertical;
+}

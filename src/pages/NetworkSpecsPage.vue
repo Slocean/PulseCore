@@ -28,6 +28,7 @@
       <p>Task: {{ activeTask || "-" }}</p>
       <p>Progress: {{ progressMbps }}</p>
       <p>Result: {{ speedResult }}</p>
+      <p v-if="lastExportPath">Exported: {{ lastExportPath }}</p>
     </article>
 
     <article class="glass-panel stat-card">
@@ -39,7 +40,10 @@
 
     <article class="glass-panel full-width">
       <h3>History</h3>
-      <button @click="loadHistory">Refresh History</button>
+      <div class="row-actions">
+        <button @click="loadHistory">Refresh History</button>
+        <button @click="exportHistory">Export CSV</button>
+      </div>
       <table>
         <thead>
           <tr>
@@ -66,12 +70,14 @@
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
+import { api, inTauri } from "../services/tauri";
 import { useAppStore } from "../stores/app";
 
 const { t } = useI18n();
 const store = useAppStore();
 const endpoint = ref(store.settings.speedtest_endpoints[0] ?? "");
 const pingTarget = ref("8.8.8.8");
+const lastExportPath = ref("");
 
 const settings = computed(() => store.settings);
 const running = computed(() => store.activeSpeedTaskId.length > 0);
@@ -105,5 +111,14 @@ async function runPing() {
 
 async function loadHistory() {
   await store.queryHistory({ page: 1, page_size: 20 });
+}
+
+async function exportHistory() {
+  if (!inTauri()) {
+    lastExportPath.value = "Tauri runtime required";
+    return;
+  }
+  const result = await api.exportHistoryCsv({});
+  lastExportPath.value = result.path;
 }
 </script>

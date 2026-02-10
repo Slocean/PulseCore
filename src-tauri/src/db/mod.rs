@@ -2,7 +2,10 @@ use std::{fs, path::Path};
 
 use anyhow::Context;
 use chrono::{DateTime, Duration, Utc};
-use sqlx::{sqlite::SqlitePoolOptions, Row, SqlitePool};
+use sqlx::{
+    sqlite::{SqliteConnectOptions, SqlitePoolOptions},
+    Row, SqlitePool,
+};
 
 use crate::types::{AppSettings, ExportResult, HistoryFilter, HistoryPage, SpeedTestResult, TimeRange};
 
@@ -17,13 +20,13 @@ impl Database {
             fs::create_dir_all(parent).context("failed to create app data dir")?;
         }
 
-        let url_path = db_path.to_string_lossy().replace("\\", "/");
-        let url = if url_path.contains(":/") {
-            format!("sqlite:///{}", url_path)
-        } else {
-            format!("sqlite://{}", url_path)
-        };
-        let pool = SqlitePoolOptions::new().max_connections(4).connect(&url).await?;
+        let options = SqliteConnectOptions::new()
+            .filename(db_path)
+            .create_if_missing(true);
+        let pool = SqlitePoolOptions::new()
+            .max_connections(4)
+            .connect_with(options)
+            .await?;
 
         let db = Self { pool };
         db.initialize().await?;
@@ -225,5 +228,6 @@ impl Database {
         Ok(())
     }
 }
+
 
 

@@ -7,6 +7,7 @@ mod tray;
 mod types;
 
 use crate::state::AppState;
+use tauri::Manager;
 
 fn main() {
     tracing_subscriber::fmt()
@@ -33,3 +34,5 @@ fn main() {
         .run(tauri::generate_context!())
         .expect("error while running PulseCore");
 }
+
+

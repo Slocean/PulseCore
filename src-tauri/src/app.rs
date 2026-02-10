@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, time::Duration};
 
 use anyhow::Context;
 
@@ -7,19 +7,60 @@ use tauri::{AppHandle, Emitter, Manager};
 use crate::{
     ipc::commands,
     state::SharedState,
-    types::{AppSettings, Mode},
+    types::{AppSettings, Mode, WarningEvent},
 };
 
 pub fn start_telemetry_loop(app: AppHandle, state: SharedState) {
     tauri::async_runtime::spawn(async move {
         let mut tick_count: u64 = 0;
+        let mut consecutive_failures: u32 = 0;
 
         loop {
-            let snapshot = state.collect_snapshot().await;
+            let snapshot = match tokio::time::timeout(Duration::from_secs(3), state.collect_snapshot()).await {
+                Ok(data) => {
+                    consecutive_failures = 0;
+                    data
+                }
+                Err(_) => {
+                    consecutive_failures = consecutive_failures.saturating_add(1);
+                    let warning = WarningEvent {
+                        message: format!(
+                            "Telemetry collection timeout (attempt #{consecutive_failures}), using last snapshot"
+                        ),
+                        source: "collector_timeout".to_string(),
+                    };
+                    let _ = app.emit("system://warning", warning);
+
+                    if consecutive_failures >= 3 {
+                        state.reset_collector().await;
+                        let _ = app.emit(
+                            "system://warning",
+                            WarningEvent {
+                                message: "Collector was reinitialized after repeated failures".to_string(),
+                                source: "collector_recover".to_string(),
+                            },
+                        );
+                        consecutive_failures = 0;
+                    }
+
+                    state.latest_snapshot.read().await.clone()
+                }
+            };
+
             state.record_snapshot(snapshot.clone()).await;
 
-            if let Err(e) = app.emit("telemetry://snapshot", snapshot) {
+            if let Err(e) = app.emit("telemetry://snapshot", snapshot.clone()) {
                 tracing::warn!("failed to emit telemetry snapshot: {e}");
+            }
+
+            if let Some(win) = app.get_webview_window("main") {
+                let title = format!(
+                    "PulseCore · CPU {:.0}% · RAM {:.0}% · Down {:.1} MB/s",
+                    snapshot.cpu.usage_pct,
+                    snapshot.memory.usage_pct,
+                    snapshot.network.download_bytes_per_sec / 1024.0 / 1024.0
+                );
+                let _ = win.set_title(&title);
             }
 
             tick_count = tick_count.saturating_add(1);
@@ -27,7 +68,7 @@ pub fn start_telemetry_loop(app: AppHandle, state: SharedState) {
                 if let Err(e) = state.prune_history().await {
                     let _ = app.emit(
                         "system://warning",
-                        crate::types::WarningEvent {
+                        WarningEvent {
                             message: e.to_string(),
                             source: "history_prune".to_string(),
                         },
@@ -43,7 +84,7 @@ pub fn start_telemetry_loop(app: AppHandle, state: SharedState) {
             }
             .clamp(100, 10_000);
 
-            tokio::time::sleep(std::time::Duration::from_millis(interval_ms)).await;
+            tokio::time::sleep(Duration::from_millis(interval_ms)).await;
         }
     });
 }
@@ -53,8 +94,6 @@ pub fn ensure_overlay_window(app: &AppHandle) -> tauri::Result<()> {
         return Ok(());
     }
 
-    // Create lazily. The initial position/size is controlled by tauri.conf.json, but
-    // we keep a fallback here for runtime-created window.
     tauri::WebviewWindowBuilder::new(app, "overlay", tauri::WebviewUrl::App("index.html#/overlay".into()))
         .title("PulseCore Overlay")
         .always_on_top(true)
@@ -88,4 +127,3 @@ pub fn register_invoke_handler(builder: tauri::Builder<tauri::Wry>) -> tauri::Bu
         commands::set_low_power_mode
     ])
 }
-

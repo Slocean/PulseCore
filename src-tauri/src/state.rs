@@ -68,6 +68,11 @@ impl AppState {
         collector.collect()
     }
 
+    pub async fn reset_collector(&self) {
+        let mut collector = self.collector.lock().await;
+        *collector = SystemCollector::new();
+    }
+
     pub fn fallback_snapshot() -> TelemetrySnapshot {
         TelemetrySnapshot {
             timestamp: Utc::now(),

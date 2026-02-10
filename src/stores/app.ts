@@ -64,6 +64,13 @@ function mockHardware(): HardwareInfo {
   };
 }
 
+function defaultHistoryFilter(): HistoryFilter {
+  return {
+    page: 1,
+    page_size: 10
+  };
+}
+
 export const useAppStore = defineStore("app", {
   state: () => ({
     ready: false,
@@ -79,6 +86,8 @@ export const useAppStore = defineStore("app", {
     lastSpeedResult: null as SpeedTestResult | null,
     lastPingResult: null as PingResult | null,
     historyPage: { total: 0, items: [] } as HistoryPage,
+    historyFilter: defaultHistoryFilter() as HistoryFilter,
+    historyLoading: false,
     unlisteners: [] as Array<() => void>
   }),
   getters: {
@@ -90,6 +99,9 @@ export const useAppStore = defineStore("app", {
     },
     networkDownHistory(state): number[] {
       return state.historySeries.map((x) => x.network.download_bytes_per_sec / (1024 * 1024));
+    },
+    totalHistoryPages(state): number {
+      return Math.max(1, Math.ceil(state.historyPage.total / state.historyFilter.page_size));
     }
   },
   actions: {
@@ -113,6 +125,7 @@ export const useAppStore = defineStore("app", {
         const bootstrap = await api.getInitialState();
         this.applyBootstrap(bootstrap);
         await this.bindEvents();
+        await this.queryHistory();
       } else {
         this.applyBootstrap({
           latest_snapshot: emptySnapshot(),
@@ -120,6 +133,7 @@ export const useAppStore = defineStore("app", {
           settings: defaultSettings()
         });
         this.bootstrapMockFeed();
+        await this.queryHistory();
       }
 
       this.bootstrapped = true;
@@ -156,6 +170,7 @@ export const useAppStore = defineStore("app", {
             this.activeSpeedTaskId = "";
           }
           this.speedProgress = null;
+          void this.queryHistory({ page: 1 });
         })
       );
       this.unlisteners.push(
@@ -172,13 +187,22 @@ export const useAppStore = defineStore("app", {
           cpu: {
             ...this.snapshot.cpu,
             usage_pct: Math.max(5, Math.min(90, this.snapshot.cpu.usage_pct + (Math.random() * 16 - 8))),
-            frequency_mhz: 4200
+            frequency_mhz: 4200,
+            temperature_c: 40 + Math.random() * 20
           },
           memory: {
             ...this.snapshot.memory,
             total_mb: 32768,
             used_mb: 13000 + Math.random() * 3000,
             usage_pct: 42 + Math.random() * 10
+          },
+          disk: {
+            ...this.snapshot.disk,
+            total_gb: 2000,
+            used_gb: 960,
+            usage_pct: 48,
+            read_bytes_per_sec: Math.random() * 120_000_000,
+            write_bytes_per_sec: Math.random() * 80_000_000
           },
           network: {
             download_bytes_per_sec: Math.random() * 65_000_000,
@@ -199,7 +223,7 @@ export const useAppStore = defineStore("app", {
     async startSpeedTest(config: SpeedTestConfig) {
       if (!inTauri()) {
         this.lastSpeedResult = {
-          task_id: "mock",
+          task_id: `mock-${Date.now()}`,
           endpoint: config.endpoint,
           download_mbps: 780,
           upload_mbps: null,
@@ -209,6 +233,8 @@ export const useAppStore = defineStore("app", {
           started_at: new Date().toISOString(),
           duration_ms: 5000
         };
+        this.historyPage.items.unshift(this.lastSpeedResult);
+        this.historyPage.total += 1;
         return;
       }
       this.speedProgress = null;
@@ -237,11 +263,25 @@ export const useAppStore = defineStore("app", {
       }
       this.lastPingResult = await api.runPingTest(target, count);
     },
-    async queryHistory(filter: HistoryFilter) {
+    async queryHistory(filter: Partial<HistoryFilter> = {}) {
+      const merged: HistoryFilter = {
+        ...this.historyFilter,
+        ...filter,
+        page: Math.max(1, filter.page ?? this.historyFilter.page),
+        page_size: Math.min(100, Math.max(1, filter.page_size ?? this.historyFilter.page_size))
+      };
+      this.historyFilter = merged;
+
       if (!inTauri()) {
         return;
       }
-      this.historyPage = await api.queryHistory(filter);
+
+      this.historyLoading = true;
+      try {
+        this.historyPage = await api.queryHistory(merged);
+      } finally {
+        this.historyLoading = false;
+      }
     },
     async toggleOverlay(visible: boolean) {
       if (!inTauri()) {

@@ -586,8 +586,8 @@ textarea {
 }
 
 .overlay-action {
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  background: transparent;
   border-radius: 10px;
   width: 32px;
   height: 32px;
@@ -595,15 +595,16 @@ textarea {
   place-items: center;
   cursor: pointer;
   transition: all 160ms ease;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .overlay-action:hover {
-  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.32);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .overlay-action--danger:hover {
   border-color: rgba(255, 59, 59, 0.55);
-  background: rgba(255, 59, 59, 0.12);
   color: #ff6b6b;
 }
 

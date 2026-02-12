@@ -3,7 +3,7 @@
     <div class="stat-grid">
       <article v-if="settings.module_toggles.show_cpu" class="glass-panel stat-card">
         <div class="stat-header">
-          <span class="stat-label">{{ t("dashboard.cpuLoad") }}</span>
+          <span class="stat-label">{{ t('dashboard.cpuLoad') }}</span>
           <span class="material-symbols-outlined stat-menu">more_vert</span>
         </div>
         <div class="stat-ring">
@@ -17,23 +17,24 @@
               fill="transparent"
               stroke-width="8"
               stroke-dasharray="314.159"
-              :stroke-dashoffset="cpuRingOffset"
-            ></circle>
+              :stroke-dashoffset="cpuRingOffset"></circle>
           </svg>
           <div class="stat-center">
             <span class="stat-value mono">{{ snapshot.cpu.usage_pct.toFixed(0) }}%</span>
-            <span class="stat-sub">{{ t("dashboard.utilization") }}</span>
+            <span class="stat-sub">{{ t('dashboard.utilization') }}</span>
           </div>
         </div>
         <div class="stat-footer">
           <p>{{ hardware.cpu_model }}</p>
-          <p class="stat-hint">{{ formatGHz(snapshot.cpu.frequency_mhz) }} • {{ formatTemp(snapshot.cpu.temperature_c) }}</p>
+          <p class="stat-hint">
+            {{ formatCpuFreq(snapshot.cpu.frequency_mhz) }} • {{ formatTemp(snapshot.cpu.temperature_c) }}
+          </p>
         </div>
       </article>
 
       <article v-if="settings.module_toggles.show_gpu" class="glass-panel stat-card">
         <div class="stat-header">
-          <span class="stat-label">{{ t("dashboard.gpuLoad") }}</span>
+          <span class="stat-label">{{ t('dashboard.gpuLoad') }}</span>
           <span class="material-symbols-outlined stat-menu">more_vert</span>
         </div>
         <div class="stat-ring">
@@ -47,12 +48,11 @@
               fill="transparent"
               stroke-width="8"
               stroke-dasharray="314.159"
-              :stroke-dashoffset="gpuRingOffset"
-            ></circle>
+              :stroke-dashoffset="gpuRingOffset"></circle>
           </svg>
           <div class="stat-center">
             <span class="stat-value mono">{{ gpuUsageLabel }}</span>
-            <span class="stat-sub">{{ t("dashboard.rendering") }}</span>
+            <span class="stat-sub">{{ t('dashboard.rendering') }}</span>
           </div>
         </div>
         <div class="stat-footer">
@@ -63,7 +63,7 @@
 
       <article v-if="settings.module_toggles.show_network" class="glass-panel stat-card stat-card--wide">
         <div class="stat-header">
-          <span class="stat-label">{{ t("dashboard.networkSpeed") }}</span>
+          <span class="stat-label">{{ t('dashboard.networkSpeed') }}</span>
           <span class="material-symbols-outlined stat-accent">speed</span>
         </div>
         <div class="speed-list">
@@ -71,7 +71,7 @@
             <div class="speed-meta">
               <span class="material-symbols-outlined speed-icon speed-icon--down">download</span>
               <div>
-                <p class="speed-label">{{ t("dashboard.down") }}</p>
+                <p class="speed-label">{{ t('dashboard.down') }}</p>
                 <p class="speed-value mono">
                   {{ downMbps.toFixed(1) }}
                   <span>Mbps</span>
@@ -84,7 +84,7 @@
             <div class="speed-meta">
               <span class="material-symbols-outlined speed-icon speed-icon--up">upload</span>
               <div>
-                <p class="speed-label">{{ t("dashboard.up") }}</p>
+                <p class="speed-label">{{ t('dashboard.up') }}</p>
                 <p class="speed-value mono">
                   {{ upMbps.toFixed(1) }}
                   <span>Mbps</span>
@@ -94,39 +94,40 @@
           </div>
         </div>
         <div class="speed-footer">
-          <span>{{ t("dashboard.ping") }}: {{ formatMs(snapshot.network.latency_ms) }}</span>
-          <span>{{ t("dashboard.jitter") }}: {{ formatMs(jitterMs) }}</span>
+          <span>{{ t('dashboard.ping') }}: {{ formatMs(snapshot.network.latency_ms) }}</span>
+          <span>{{ t('dashboard.jitter') }}: {{ formatMs(jitterMs) }}</span>
         </div>
       </article>
 
       <article v-if="settings.module_toggles.show_disk" class="glass-panel stat-card stat-card--wide">
         <div class="stat-header">
-          <span class="stat-label">{{ t("dashboard.storageHealth") }}</span>
+          <span class="stat-label">{{ t('dashboard.storageHealth') }}</span>
           <span class="material-symbols-outlined stat-accent stat-accent--ok">verified</span>
         </div>
         <div class="storage-list">
-          <div class="storage-item">
+          <div class="storage-item" v-for="disk in snapshot.disks" :key="disk.name">
             <div class="storage-meta">
-              <p>{{ primaryDiskLabel }}</p>
-              <p class="mono">{{ formatPercent(snapshot.disk.usage_pct) }}</p>
+              <div>
+                <p>
+                  {{ disk.name }}
+                  <span class="muted" style="font-size: 0.8em">{{ disk.label }}</span>
+                </p>
+                <div style="display: flex; gap: 8px; font-size: 0.8em; opacity: 0.7; margin-top: 2px">
+                  <span>{{ disk.used_gb.toFixed(0) }}/{{ disk.total_gb.toFixed(0) }} GB</span>
+                  <span>R: {{ ((disk.read_bytes_per_sec || 0) / 1024 / 1024).toFixed(1) }} MB/s</span>
+                  <span>W: {{ ((disk.write_bytes_per_sec || 0) / 1024 / 1024).toFixed(1) }} MB/s</span>
+                </div>
+              </div>
+              <p class="mono">{{ formatPercent(disk.usage_pct) }}</p>
             </div>
-            <div class="storage-bar">
-              <span :style="{ width: `${snapshot.disk.usage_pct}%` }"></span>
-            </div>
-          </div>
-          <div class="storage-item">
-            <div class="storage-meta">
-              <p>{{ secondaryDiskLabel }}</p>
-              <p class="mono">{{ secondaryDiskUsageLabel }}</p>
-            </div>
-            <div class="storage-bar storage-bar--alt">
-              <span :style="{ width: `${secondaryDiskUsageValue}%` }"></span>
+            <div class="storage-bar" :class="{ 'storage-bar--alt': disk.name !== 'C:\\' && disk.name !== '/' }">
+              <span :style="{ width: `${disk.usage_pct}%` }"></span>
             </div>
           </div>
         </div>
         <div class="storage-status">
           <span class="status-dot"></span>
-          <span>{{ t("dashboard.allDisksHealthy") }}</span>
+          <span>{{ t('dashboard.allDisksHealthy') }}</span>
         </div>
       </article>
     </div>
@@ -134,12 +135,12 @@
     <article v-if="settings.module_toggles.show_memory" class="glass-panel memory-panel">
       <div class="memory-header">
         <div>
-          <h3>{{ t("dashboard.memoryProfile") }}</h3>
-          <p>{{ t("dashboard.memorySubtitle") }}</p>
+          <h3>{{ t('dashboard.memoryProfile') }}</h3>
+          <p>{{ t('dashboard.memorySubtitle') }}</p>
         </div>
         <div class="memory-tags">
-          <span class="mono">{{ t("dashboard.active") }}: {{ formatGb(snapshot.memory.used_mb) }}</span>
-          <span class="mono">{{ t("dashboard.total") }}: {{ formatGb(snapshot.memory.total_mb) }}</span>
+          <span class="mono">{{ t('dashboard.active') }}: {{ formatGb(snapshot.memory.used_mb) }}</span>
+          <span class="mono">{{ t('dashboard.total') }}: {{ formatGb(snapshot.memory.total_mb) }}</span>
         </div>
       </div>
       <div class="memory-chart">
@@ -155,23 +156,23 @@
         <span>-45 min</span>
         <span>-30 min</span>
         <span>-15 min</span>
-        <span>{{ t("dashboard.now") }}</span>
+        <span>{{ t('dashboard.now') }}</span>
       </div>
     </article>
 
     <div class="lower-grid">
       <article class="glass-panel process-panel">
-        <h3>{{ t("dashboard.processMonitor") }}</h3>
+        <h3>{{ t('dashboard.processMonitor') }}</h3>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>{{ t("dashboard.processName") }}</th>
+                <th>{{ t('dashboard.processName') }}</th>
                 <th>PID</th>
                 <th>CPU</th>
-                <th>{{ t("dashboard.memory") }}</th>
-                <th>{{ t("dashboard.user") }}</th>
-                <th>{{ t("dashboard.status") }}</th>
+                <th>{{ t('dashboard.memory') }}</th>
+                <th>{{ t('dashboard.user') }}</th>
+                <th>{{ t('dashboard.status') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -191,7 +192,7 @@
       </article>
 
       <article class="glass-panel env-panel">
-        <h3>{{ t("dashboard.environment") }}</h3>
+        <h3>{{ t('dashboard.environment') }}</h3>
         <div class="env-list">
           <div v-for="item in environmentStats" :key="item.label" class="env-item">
             <div class="env-meta">
@@ -202,7 +203,7 @@
           </div>
         </div>
         <div class="env-action">
-          <button type="button">{{ t("dashboard.exportReport") }}</button>
+          <button type="button">{{ t('dashboard.exportReport') }}</button>
         </div>
       </article>
     </div>
@@ -210,10 +211,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { useI18n } from "vue-i18n";
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 
-import { useAppStore } from "../stores/app";
+import { useAppStore } from '../stores/app';
 
 const { t } = useI18n();
 const store = useAppStore();
@@ -233,67 +234,91 @@ const ringOffset = (percent: number) => {
 const cpuRingOffset = computed(() => ringOffset(snapshot.value.cpu.usage_pct));
 const gpuRingOffset = computed(() => ringOffset(snapshot.value.gpu.usage_pct ?? 0));
 const gpuUsageLabel = computed(() =>
-  snapshot.value.gpu.usage_pct == null ? t("common.na") : `${snapshot.value.gpu.usage_pct.toFixed(0)}%`
+  snapshot.value.gpu.usage_pct == null ? t('common.na') : `${snapshot.value.gpu.usage_pct.toFixed(0)}%`
 );
 
 const formatVram = computed(() => {
   if (snapshot.value.gpu.memory_used_mb == null || snapshot.value.gpu.memory_total_mb == null) {
-    return t("common.na");
+    return t('common.na');
   }
   return `${snapshot.value.gpu.memory_used_mb.toFixed(0)} MB / ${snapshot.value.gpu.memory_total_mb.toFixed(0)} MB`;
 });
 
-const primaryDiskLabel = computed(() => hardware.value.disk_models?.[0] ?? t("dashboard.storagePrimary"));
-const secondaryDiskLabel = computed(() => hardware.value.disk_models?.[1] ?? t("dashboard.storageSecondary"));
-const secondaryDiskUsageValue = computed(() => (hardware.value.disk_models?.length > 1 ? snapshot.value.disk.usage_pct : 0));
-const secondaryDiskUsageLabel = computed(() =>
-  hardware.value.disk_models?.length > 1 ? formatPercent(snapshot.value.disk.usage_pct) : t("common.na")
-);
-
 const memoryBars = computed(() => {
   const series = store.memoryHistory.slice(-20);
   const base = series.length > 0 ? series : [0];
-  const padded =
-    base.length < 20 ? Array.from({ length: 20 - base.length }, () => base[0] ?? 0) : [];
-  return [...padded, ...base].map((value) => Math.min(88, Math.max(12, value)));
+  const padded = base.length < 20 ? Array.from({ length: 20 - base.length }, () => base[0] ?? 0) : [];
+  return [...padded, ...base].map(value => Math.min(88, Math.max(12, value)));
 });
 
 const processList = computed(() => [
-  { name: "System Idle Process", pid: "0", cpu: "74.2%", memory: "12 KB", user: "SYSTEM", status: t("dashboard.statusBackground"), tone: "neutral" },
-  { name: "PulseCoreEngine.exe", pid: "4291", cpu: "4.1%", memory: "452 MB", user: "Admin", status: t("dashboard.statusCritical"), tone: "critical" },
-  { name: "Docker Desktop", pid: "1204", cpu: "2.8%", memory: "2.1 GB", user: "Admin", status: t("dashboard.statusRunning"), tone: "neutral" },
-  { name: "Chrome Backend", pid: "8820", cpu: "1.2%", memory: "891 MB", user: "Admin", status: t("dashboard.statusRunning"), tone: "neutral" }
+  {
+    name: 'System Idle Process',
+    pid: '0',
+    cpu: '74.2%',
+    memory: '12 KB',
+    user: 'SYSTEM',
+    status: t('dashboard.statusBackground'),
+    tone: 'neutral'
+  },
+  {
+    name: 'PulseCoreEngine.exe',
+    pid: '4291',
+    cpu: '4.1%',
+    memory: '452 MB',
+    user: 'Admin',
+    status: t('dashboard.statusCritical'),
+    tone: 'critical'
+  },
+  {
+    name: 'Docker Desktop',
+    pid: '1204',
+    cpu: '2.8%',
+    memory: '2.1 GB',
+    user: 'Admin',
+    status: t('dashboard.statusRunning'),
+    tone: 'neutral'
+  },
+  {
+    name: 'Chrome Backend',
+    pid: '8820',
+    cpu: '1.2%',
+    memory: '891 MB',
+    user: 'Admin',
+    status: t('dashboard.statusRunning'),
+    tone: 'neutral'
+  }
 ]);
 
 const environmentStats = computed(() => [
   {
-    icon: "thermostat",
-    label: t("dashboard.ambientTemp"),
+    icon: 'thermostat',
+    label: t('dashboard.ambientTemp'),
     value: formatTemp(snapshot.value.cpu.temperature_c),
-    tone: "tone-warm"
+    tone: 'tone-warm'
   },
   {
-    icon: "cloud",
-    label: t("dashboard.fanSpeed"),
-    value: t("common.na"),
-    tone: "tone-cool"
+    icon: 'cloud',
+    label: t('dashboard.fanSpeed'),
+    value: t('common.na'),
+    tone: 'tone-cool'
   },
   {
-    icon: "bolt",
-    label: t("dashboard.totalPower"),
-    value: snapshot.value.power_watts == null ? t("common.na") : `${snapshot.value.power_watts.toFixed(0)} W`,
-    tone: "tone-purple"
+    icon: 'bolt',
+    label: t('dashboard.totalPower'),
+    value: snapshot.value.power_watts == null ? t('common.na') : `${snapshot.value.power_watts.toFixed(0)} W`,
+    tone: 'tone-purple'
   },
   {
-    icon: "verified_user",
-    label: t("dashboard.uptime"),
-    value: t("common.na"),
-    tone: "tone-green"
+    icon: 'verified_user',
+    label: t('dashboard.uptime'),
+    value: t('common.na'),
+    tone: 'tone-green'
   }
 ]);
 
 function formatTemp(temp: number | null): string {
-  return temp == null ? t("common.na") : `${temp.toFixed(1)}°C`;
+  return temp == null ? t('common.na') : `${temp.toFixed(1)}°C`;
 }
 
 function formatPercent(value: number): string {
@@ -301,11 +326,20 @@ function formatPercent(value: number): string {
 }
 
 function formatMs(value: number | null): string {
-  return value == null ? t("common.na") : `${value.toFixed(1)} ms`;
+  return value == null ? t('common.na') : `${value.toFixed(1)} ms`;
 }
 
 function formatGHz(value: number | null): string {
-  return value == null ? t("common.na") : `${(value / 1000).toFixed(1)} GHz`;
+  return value == null ? t('common.na') : `${(value / 1000).toFixed(1)} GHz`;
+}
+
+function formatCpuFreq(value: number | null): string {
+  if (value == null) return t('common.na');
+  const max = store.hardwareInfo.cpu_max_freq_mhz;
+  if (max) {
+    return `${(value / 1000).toFixed(1)}/${(max / 1000).toFixed(1)} GHz`;
+  }
+  return `${(value / 1000).toFixed(1)} GHz`;
 }
 
 function formatGb(valueMb: number): string {

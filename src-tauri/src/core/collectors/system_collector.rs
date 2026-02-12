@@ -4,7 +4,7 @@ use std::{
 };
 
 use chrono::Utc;
-use sysinfo::{Disks, Networks, System};
+use sysinfo::{Components, Disks, Networks, System};
 
 use crate::types::{
     CpuMetrics, DiskMetrics, GpuMetrics, MemoryMetrics, NetworkMetrics, TelemetrySnapshot,
@@ -14,6 +14,7 @@ pub struct SystemCollector {
     system: System,
     networks: Networks,
     disks: Disks,
+    components: Components,
     prev_rx: u64,
     prev_tx: u64,
     prev_tick: Instant,
@@ -30,12 +31,14 @@ impl SystemCollector {
         networks.refresh(true);
 
         let disks = Disks::new_with_refreshed_list();
+        let components = Components::new_with_refreshed_list();
         let (prev_rx, prev_tx) = Self::network_totals(&networks);
 
         Self {
             system,
             networks,
             disks,
+            components,
             prev_rx,
             prev_tx,
             prev_tick: Instant::now(),
@@ -54,6 +57,7 @@ impl SystemCollector {
         self.system.refresh_memory();
         self.networks.refresh(true);
         self.disks.refresh(true);
+        self.components.refresh(true);
 
         let cpu_usage = self.system.global_cpu_usage() as f64;
         let frequency = if self.system.cpus().is_empty() {
@@ -63,6 +67,26 @@ impl SystemCollector {
             Some(total / self.system.cpus().len() as u64)
         };
 
+        // Attempt to find CPU temperature
+        let mut cpu_temp: Option<f64> = None;
+        for component in &self.components {
+            let label = component.label().to_lowercase();
+            if label.contains("cpu") || label.contains("core") || label.contains("package") {
+                if let Some(temp) = component.temperature() {
+                    match cpu_temp {
+                        Some(current) => {
+                            if (temp as f64) > current {
+                                cpu_temp = Some(temp as f64);
+                            }
+                        }
+                        None => {
+                            cpu_temp = Some(temp as f64);
+                        }
+                    }
+                }
+            }
+        }
+
         let memory_total_mb = self.system.total_memory() as f64 / (1024.0 * 1024.0);
         let memory_used_mb = self.system.used_memory() as f64 / (1024.0 * 1024.0);
         let memory_usage_pct = if memory_total_mb > 0.0 {
@@ -71,19 +95,28 @@ impl SystemCollector {
             0.0
         };
 
-        let mut total_disk = 0.0;
-        let mut used_disk = 0.0;
+        let mut disks_vec: Vec<DiskMetrics> = Vec::new();
         for disk in self.disks.list() {
             let total = disk.total_space() as f64 / (1024.0 * 1024.0 * 1024.0);
             let avail = disk.available_space() as f64 / (1024.0 * 1024.0 * 1024.0);
-            total_disk += total;
-            used_disk += (total - avail).max(0.0);
+            let used = (total - avail).max(0.0);
+            let usage_pct = if total > 0.0 { used / total * 100.0 } else { 0.0 };
+
+            // usage() returns DiskUsage which contains deltas since last refresh
+            let usage = disk.usage();
+            let read_bytes = usage.read_bytes;
+            let written_bytes = usage.written_bytes;
+
+            disks_vec.push(DiskMetrics {
+                name: disk.mount_point().to_string_lossy().to_string(),
+                label: disk.name().to_string_lossy().to_string(),
+                used_gb: used,
+                total_gb: total,
+                usage_pct,
+                read_bytes_per_sec: Some(read_bytes as f64),
+                write_bytes_per_sec: Some(written_bytes as f64),
+            });
         }
-        let disk_usage_pct = if total_disk > 0.0 {
-            used_disk / total_disk * 100.0
-        } else {
-            0.0
-        };
 
         let (rx_total, tx_total) = Self::network_totals(&self.networks);
         let elapsed = self.prev_tick.elapsed().as_secs_f64().max(0.001);
@@ -101,7 +134,7 @@ impl SystemCollector {
             cpu: CpuMetrics {
                 usage_pct: cpu_usage,
                 frequency_mhz: frequency,
-                temperature_c: None,
+                temperature_c: cpu_temp,
             },
             gpu: gpu_metrics,
             memory: MemoryMetrics {
@@ -109,13 +142,7 @@ impl SystemCollector {
                 total_mb: memory_total_mb,
                 usage_pct: memory_usage_pct,
             },
-            disk: DiskMetrics {
-                used_gb: used_disk,
-                total_gb: total_disk,
-                usage_pct: disk_usage_pct,
-                read_bytes_per_sec: None,
-                write_bytes_per_sec: None,
-            },
+            disks: disks_vec,
             network: NetworkMetrics {
                 download_bytes_per_sec: rx_rate,
                 upload_bytes_per_sec: tx_rate,

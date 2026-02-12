@@ -20,6 +20,8 @@ export interface MemoryMetrics {
 }
 
 export interface DiskMetrics {
+  name: string;
+  label: string;
   used_gb: number;
   total_gb: number;
   usage_pct: number;
@@ -38,13 +40,14 @@ export interface TelemetrySnapshot {
   cpu: CpuMetrics;
   gpu: GpuMetrics;
   memory: MemoryMetrics;
-  disk: DiskMetrics;
+  disks: DiskMetrics[];
   network: NetworkMetrics;
   power_watts: number | null;
 }
 
 export interface HardwareInfo {
   cpu_model: string;
+  cpu_max_freq_mhz: number | null;
   gpu_model: string;
   ram_spec: string;
   disk_models: string[];

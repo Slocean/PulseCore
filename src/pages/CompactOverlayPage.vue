@@ -101,20 +101,31 @@
         </div>
       </div>
 
-      <div v-if="prefs.showDisk" class="overlay-metric">
-        <div class="overlay-metric-top">
-          <div class="overlay-metric-label">
-            <span class="material-symbols-outlined overlay-icon overlay-icon--cpu">hard_drive</span>
-            <span class="overlay-metric-name">{{ t('overlay.disk') }}</span>
+      <template v-if="prefs.showDisk">
+        <div v-for="disk in disks" :key="disk.name" class="overlay-metric">
+          <div class="overlay-metric-top">
+            <div class="overlay-metric-label">
+              <span class="material-symbols-outlined overlay-icon overlay-icon--cpu">hard_drive</span>
+              <span class="overlay-metric-name">{{ disk.name }}</span>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2">
+              <span class="overlay-metric-value overlay-glow-pink">{{ disk.usage_pct.toFixed(1) }}%</span>
+              <span style="font-size: 0.7em; opacity: 0.7">
+                {{ disk.used_gb.toFixed(0) }}/{{ disk.total_gb.toFixed(0) }} GB
+              </span>
+              <div style="display: flex; gap: 4px; font-size: 0.6em; opacity: 0.6">
+                <span>R: {{ ((disk.read_bytes_per_sec || 0) / 1024 / 1024).toFixed(1) }} MB/s</span>
+                <span>W: {{ ((disk.write_bytes_per_sec || 0) / 1024 / 1024).toFixed(1) }} MB/s</span>
+              </div>
+            </div>
           </div>
-          <span class="overlay-metric-value overlay-glow-pink">{{ diskUsageLabel }}</span>
+          <div class="overlay-progress">
+            <span
+              class="overlay-progress-fill overlay-progress-fill--pink"
+              :style="{ width: `${disk.usage_pct}%` }"></span>
+          </div>
         </div>
-        <div class="overlay-progress">
-          <span
-            class="overlay-progress-fill overlay-progress-fill--pink"
-            :style="{ width: `${diskUsagePct}%` }"></span>
-        </div>
-      </div>
+      </template>
     </div>
 
     <div class="overlay-divider"></div>
@@ -192,13 +203,32 @@ let lastPosition = { x: 0, y: 0 };
 const cpuUsagePct = computed(() => snapshot.value.cpu.usage_pct);
 const gpuUsagePct = computed(() => snapshot.value.gpu.usage_pct ?? 0);
 const memoryUsagePct = computed(() => snapshot.value.memory.usage_pct);
-const diskUsagePct = computed(() => snapshot.value.disk.usage_pct);
-const cpuUsageLabel = computed(() => `${snapshot.value.cpu.usage_pct.toFixed(1)}%`);
+const disks = computed(() => snapshot.value.disks);
+const cpuUsageLabel = computed(() => {
+  const parts = [`${snapshot.value.cpu.usage_pct.toFixed(1)}%`];
+
+  const freq = snapshot.value.cpu.frequency_mhz;
+  const maxFreq = store.hardwareInfo.cpu_max_freq_mhz;
+
+  if (freq && maxFreq) {
+    parts.push(`${(freq / 1000).toFixed(1)}/${(maxFreq / 1000).toFixed(1)}GHz`);
+  } else if (freq) {
+    parts.push(`${(freq / 1000).toFixed(1)}GHz`);
+  }
+
+  if (snapshot.value.cpu.temperature_c) {
+    parts.push(`${snapshot.value.cpu.temperature_c.toFixed(0)}°C`);
+  }
+  return parts.join(' · ');
+});
 const gpuUsageLabel = computed(() =>
   snapshot.value.gpu.usage_pct == null ? t('common.na') : `${snapshot.value.gpu.usage_pct.toFixed(1)}%`
 );
-const memoryUsageLabel = computed(() => `${snapshot.value.memory.usage_pct.toFixed(1)}%`);
-const diskUsageLabel = computed(() => `${snapshot.value.disk.usage_pct.toFixed(1)}%`);
+const memoryUsageLabel = computed(() => {
+  const used = (snapshot.value.memory.used_mb / 1024).toFixed(1);
+  const total = (snapshot.value.memory.total_mb / 1024).toFixed(0);
+  return `${used}/${total} GB`;
+});
 const downloadSpeed = computed(() => (snapshot.value.network.download_bytes_per_sec / 1024 / 1024).toFixed(2));
 const uploadSpeed = computed(() => (snapshot.value.network.upload_bytes_per_sec / 1024 / 1024).toFixed(2));
 

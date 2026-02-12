@@ -92,13 +92,7 @@ impl AppState {
                 total_mb: 1.0,
                 usage_pct: 0.0,
             },
-            disk: crate::types::DiskMetrics {
-                used_gb: 0.0,
-                total_gb: 1.0,
-                usage_pct: 0.0,
-                read_bytes_per_sec: None,
-                write_bytes_per_sec: None,
-            },
+            disks: Vec::new(),
             network: crate::types::NetworkMetrics {
                 download_bytes_per_sec: 0.0,
                 upload_bytes_per_sec: 0.0,

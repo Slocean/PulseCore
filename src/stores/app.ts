@@ -1,5 +1,5 @@
-import { defineStore } from "pinia";
-import { api, inTauri, listenEvent } from "../services/tauri";
+import { defineStore } from 'pinia';
+import { api, inTauri, listenEvent } from '../services/tauri';
 import type {
   AppBootstrap,
   AppSettings,
@@ -12,7 +12,7 @@ import type {
   SpeedTestResult,
   TelemetrySnapshot,
   WarningEvent
-} from "../types";
+} from '../types';
 
 const HISTORY_LIMIT = 120;
 
@@ -22,7 +22,7 @@ function emptySnapshot(): TelemetrySnapshot {
     cpu: { usage_pct: 0, frequency_mhz: null, temperature_c: null },
     gpu: { usage_pct: null, temperature_c: null, memory_used_mb: null, memory_total_mb: null },
     memory: { used_mb: 0, total_mb: 1, usage_pct: 0 },
-    disk: { used_gb: 0, total_gb: 1, usage_pct: 0, read_bytes_per_sec: null, write_bytes_per_sec: null },
+    disks: [],
     network: { download_bytes_per_sec: 0, upload_bytes_per_sec: 0, latency_ms: null },
     power_watts: null
   };
@@ -39,15 +39,12 @@ function defaultSettings(): AppSettings {
       show_disk: true,
       show_network: true
     },
-    theme: "cyber-dark",
-    accent: "#2b6cee",
+    theme: 'cyber-dark',
+    accent: '#2b6cee',
     glass_opacity: 0.75,
     glow_intensity: 0.4,
-    language: "zh-CN",
-    speedtest_endpoints: [
-      "https://speed.hetzner.de/100MB.bin",
-      "https://proof.ovh.net/files/100Mb.dat"
-    ],
+    language: 'zh-CN',
+    speedtest_endpoints: ['https://speed.hetzner.de/100MB.bin', 'https://proof.ovh.net/files/100Mb.dat'],
     history_retention_days: 30,
     sensor_boost_enabled: false
   };
@@ -55,12 +52,13 @@ function defaultSettings(): AppSettings {
 
 function mockHardware(): HardwareInfo {
   return {
-    cpu_model: "Mock CPU",
-    gpu_model: "N/A",
-    ram_spec: "16GB",
-    disk_models: ["Mock NVMe"],
-    motherboard: "N/A",
-    device_brand: "PulseCore Dev"
+    cpu_model: 'Mock CPU',
+    cpu_max_freq_mhz: 4500,
+    gpu_model: 'N/A',
+    ram_spec: '16GB',
+    disk_models: ['Mock NVMe'],
+    motherboard: 'N/A',
+    device_brand: 'PulseCore Dev'
   };
 }
 
@@ -71,18 +69,18 @@ function defaultHistoryFilter(): HistoryFilter {
   };
 }
 
-export const useAppStore = defineStore("app", {
+export const useAppStore = defineStore('app', {
   state: () => ({
     ready: false,
     bootstrapped: false,
     bigScreen: false,
-    mode: "normal" as "normal" | "low_power",
+    mode: 'normal' as 'normal' | 'low_power',
     snapshot: emptySnapshot(),
     historySeries: [] as TelemetrySnapshot[],
     hardwareInfo: mockHardware(),
     settings: defaultSettings(),
     warnings: [] as WarningEvent[],
-    activeSpeedTaskId: "" as string,
+    activeSpeedTaskId: '' as string,
     speedProgress: null as SpeedTestProgress | null,
     lastSpeedResult: null as SpeedTestResult | null,
     lastPingResult: null as PingResult | null,
@@ -93,13 +91,13 @@ export const useAppStore = defineStore("app", {
   }),
   getters: {
     cpuHistory(state): number[] {
-      return state.historySeries.map((x) => x.cpu.usage_pct);
+      return state.historySeries.map(x => x.cpu.usage_pct);
     },
     memoryHistory(state): number[] {
-      return state.historySeries.map((x) => x.memory.usage_pct);
+      return state.historySeries.map(x => x.memory.usage_pct);
     },
     networkDownHistory(state): number[] {
-      return state.historySeries.map((x) => x.network.download_bytes_per_sec / (1024 * 1024));
+      return state.historySeries.map(x => x.network.download_bytes_per_sec / (1024 * 1024));
     },
     totalHistoryPages(state): number {
       return Math.max(1, Math.ceil(state.historyPage.total / state.historyFilter.page_size));
@@ -147,35 +145,35 @@ export const useAppStore = defineStore("app", {
     },
     async bindEvents() {
       this.unlisteners.push(
-        await listenEvent<TelemetrySnapshot>("telemetry://snapshot", (payload) => this.pushSnapshot(payload))
+        await listenEvent<TelemetrySnapshot>('telemetry://snapshot', payload => this.pushSnapshot(payload))
       );
       this.unlisteners.push(
-        await listenEvent<{ mode: "normal" | "low_power" }>("telemetry://mode_changed", (payload) => {
+        await listenEvent<{ mode: 'normal' | 'low_power' }>('telemetry://mode_changed', payload => {
           this.mode = payload.mode;
         })
       );
       this.unlisteners.push(
-        await listenEvent<WarningEvent>("system://warning", (payload) => this.pushWarning(payload))
+        await listenEvent<WarningEvent>('system://warning', payload => this.pushWarning(payload))
       );
       this.unlisteners.push(
-        await listenEvent<SpeedTestProgress>("network://speedtest_progress", (payload) => {
+        await listenEvent<SpeedTestProgress>('network://speedtest_progress', payload => {
           if (payload.task_id === this.activeSpeedTaskId) {
             this.speedProgress = payload;
           }
         })
       );
       this.unlisteners.push(
-        await listenEvent<SpeedTestResult>("network://speedtest_done", (payload) => {
+        await listenEvent<SpeedTestResult>('network://speedtest_done', payload => {
           this.lastSpeedResult = payload;
           if (payload.task_id === this.activeSpeedTaskId) {
-            this.activeSpeedTaskId = "";
+            this.activeSpeedTaskId = '';
           }
           this.speedProgress = null;
           void this.queryHistory({ page: 1 });
         })
       );
       this.unlisteners.push(
-        await listenEvent<PingResult>("network://ping_done", (payload) => {
+        await listenEvent<PingResult>('network://ping_done', payload => {
           this.lastPingResult = payload;
         })
       );
@@ -197,14 +195,26 @@ export const useAppStore = defineStore("app", {
             used_mb: 13000 + Math.random() * 3000,
             usage_pct: 42 + Math.random() * 10
           },
-          disk: {
-            ...this.snapshot.disk,
-            total_gb: 2000,
-            used_gb: 960,
-            usage_pct: 48,
-            read_bytes_per_sec: Math.random() * 120_000_000,
-            write_bytes_per_sec: Math.random() * 80_000_000
-          },
+          disks: [
+            {
+              name: 'C:\\',
+              label: 'System',
+              total_gb: 2000,
+              used_gb: 960,
+              usage_pct: 48,
+              read_bytes_per_sec: Math.random() * 120_000_000,
+              write_bytes_per_sec: Math.random() * 80_000_000
+            },
+            {
+              name: 'D:\\',
+              label: 'Data',
+              total_gb: 4000,
+              used_gb: 2000,
+              usage_pct: 50,
+              read_bytes_per_sec: 0,
+              write_bytes_per_sec: 0
+            }
+          ],
           network: {
             download_bytes_per_sec: Math.random() * 65_000_000,
             upload_bytes_per_sec: Math.random() * 24_000_000,
@@ -246,7 +256,7 @@ export const useAppStore = defineStore("app", {
         return;
       }
       await api.cancelSpeedTest(this.activeSpeedTaskId);
-      this.activeSpeedTaskId = "";
+      this.activeSpeedTaskId = '';
       this.speedProgress = null;
     },
     async runPing(target: string, count = 4) {
@@ -295,16 +305,14 @@ export const useAppStore = defineStore("app", {
     },
     async setLowPowerMode(lowPower: boolean) {
       if (!inTauri()) {
-        this.mode = lowPower ? "low_power" : "normal";
+        this.mode = lowPower ? 'low_power' : 'normal';
         return;
       }
       await api.setLowPowerMode(lowPower);
     },
     dispose() {
-      this.unlisteners.forEach((fn) => fn());
+      this.unlisteners.forEach(fn => fn());
       this.unlisteners = [];
     }
   }
 });
-
-

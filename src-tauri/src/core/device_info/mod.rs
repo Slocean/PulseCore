@@ -25,6 +25,7 @@ pub fn collect_hardware_info() -> HardwareInfo {
 
     HardwareInfo {
         cpu_model,
+        cpu_max_freq_mhz: cpu_max_frequency(),
         gpu_model: gpu_models().unwrap_or_else(|| "N/A".to_string()),
         ram_spec,
         disk_models: if disk_models.is_empty() {
@@ -52,6 +53,15 @@ fn fallback_disk_models() -> Vec<String> {
     }
 
     list
+}
+
+fn cpu_max_frequency() -> Option<u64> {
+    let script = r#"
+$freq = Get-CimInstance Win32_Processor -ErrorAction SilentlyContinue | Select-Object -ExpandProperty MaxClockSpeed
+if ($freq) { $freq }
+"#;
+    run_powershell_lines(script)
+        .and_then(|lines| lines.first().and_then(|s| s.parse().ok()))
 }
 
 fn gpu_models() -> Option<String> {

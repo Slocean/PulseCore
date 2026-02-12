@@ -25,6 +25,8 @@ pub struct MemoryMetrics {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DiskMetrics {
+    pub name: String,
+    pub label: String,
     pub used_gb: f64,
     pub total_gb: f64,
     pub usage_pct: f64,
@@ -45,7 +47,7 @@ pub struct TelemetrySnapshot {
     pub cpu: CpuMetrics,
     pub gpu: GpuMetrics,
     pub memory: MemoryMetrics,
-    pub disk: DiskMetrics,
+    pub disks: Vec<DiskMetrics>,
     pub network: NetworkMetrics,
     pub power_watts: Option<f64>,
 }
@@ -53,6 +55,7 @@ pub struct TelemetrySnapshot {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HardwareInfo {
     pub cpu_model: String,
+    pub cpu_max_freq_mhz: Option<u64>,
     pub gpu_model: String,
     pub ram_spec: String,
     pub disk_models: Vec<String>,

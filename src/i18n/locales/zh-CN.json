@@ -183,6 +183,7 @@
     "showDisk": "显示磁盘",
     "showDown": "显示下载",
     "showUp": "显示上传",
+    "showLatency": "显示网络延迟",
     "showValues": "显示具体值",
     "showPercent": "显示百分比",
     "showHardware": "显示型号与品牌",

@@ -54,6 +54,10 @@
         {{ t('overlay.showUp') }}
       </label>
       <label>
+        <input v-model="prefs.showLatency" type="checkbox" />
+        {{ t('overlay.showLatency') }}
+      </label>
+      <label>
         <input v-model="prefs.showValues" type="checkbox" />
         {{ t('overlay.showValues') }}
       </label>
@@ -159,13 +163,8 @@
 
     <div class="overlay-divider"></div>
 
-    <div class="overlay-network-meta">
-      <span>{{ t('overlay.latency') }}</span>
-      <strong>{{ latencyLabel }}</strong>
-    </div>
-
     <footer class="overlay-network">
-      <div v-if="prefs.showUp" class="overlay-network-item overlay-network-item--right">
+      <div v-if="prefs.showUp" class="overlay-network-item">
         <div class="overlay-network-label">
           <span class="material-symbols-outlined">upload</span>
           <span>{{ t('overlay.up') }}</span>
@@ -173,6 +172,15 @@
         <div class="overlay-network-value overlay-glow-cyan">
           {{ uploadSpeed }}
           <span>MB/s</span>
+        </div>
+      </div>
+      <div v-if="prefs.showLatency" class="overlay-network-item">
+        <div class="overlay-network-label">
+          <span class="material-symbols-outlined">network_ping</span>
+          <span>{{ t('overlay.latency') }}</span>
+        </div>
+        <div class="overlay-network-value overlay-glow-cyan">
+          {{ latencyLabel }}
         </div>
       </div>
       <div v-if="prefs.showDown" class="overlay-network-item">
@@ -215,6 +223,7 @@ interface OverlayPrefs {
   showDisk: boolean;
   showDown: boolean;
   showUp: boolean;
+  showLatency: boolean;
   showValues: boolean;
   showPercent: boolean;
   showHardwareInfo: boolean;
@@ -310,6 +319,7 @@ function loadPrefs(): OverlayPrefs {
     showDisk: true,
     showDown: true,
     showUp: true,
+    showLatency: true,
     showValues: true,
     showPercent: true,
     showHardwareInfo: false
@@ -328,6 +338,7 @@ function loadPrefs(): OverlayPrefs {
       showDisk: parsed.showDisk ?? fallback.showDisk,
       showDown: parsed.showDown ?? fallback.showDown,
       showUp: parsed.showUp ?? fallback.showUp,
+      showLatency: parsed.showLatency ?? fallback.showLatency,
       showValues: parsed.showValues ?? fallback.showValues,
       showPercent: parsed.showPercent ?? fallback.showPercent,
       showHardwareInfo: parsed.showHardwareInfo ?? fallback.showHardwareInfo

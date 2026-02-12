@@ -183,6 +183,7 @@
     "showDisk": "Show Disk",
     "showDown": "Show Download",
     "showUp": "Show Upload",
+    "showLatency": "Show Network Latency",
     "showValues": "Show Values",
     "showPercent": "Show Percent",
     "showHardware": "Show Model & Brand",

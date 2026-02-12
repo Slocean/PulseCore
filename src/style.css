@@ -541,7 +541,7 @@ textarea {
 }
 
 .overlay-widget {
-  width: fit-content;
+  width: 310px;
   max-width: none;
   padding: 16px;
   position: relative;
@@ -770,43 +770,16 @@ textarea {
 }
 
 .overlay-network {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
-}
-
-.overlay-network-meta {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  font-size: 10px;
-  letter-spacing: 0.22em;
-  color: rgba(255, 255, 255, 0.55);
-  text-transform: uppercase;
-  margin-bottom: 10px;
-}
-
-.overlay-network-meta strong {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.85);
 }
 
 .overlay-network-item {
   display: flex;
   flex-direction: column;
-}
-
-.overlay-network-item--right {
-  align-items: flex-end;
-  text-align: right;
-}
-
-.overlay-network-item--right .overlay-network-label {
-  justify-content: flex-end;
+  align-items: center;
+  text-align: center;
 }
 
 .overlay-network-label {
@@ -840,8 +813,8 @@ textarea {
   margin-top: 12px;
   padding-top: 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: center;
   font-size: 9px;
   letter-spacing: 0.2em;
@@ -849,14 +822,16 @@ textarea {
   text-transform: uppercase;
 }
 
-.overlay-status-uptime {
-  text-align: right;
-}
-
 .overlay-status-left {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+}
+
+.overlay-status-uptime {
+  text-align: right;
+  justify-self: center;
 }
 
 .overlay-status-dot {

@@ -64,12 +64,6 @@ export interface ModuleToggles {
   show_network: boolean;
 }
 
-export interface OverlayDisplaySettings {
-  show_values: boolean;
-  show_percent: boolean;
-  show_hardware_info: boolean;
-}
-
 export interface AppSettings {
   refresh_rate_ms: number;
   low_power_rate_ms: number;
@@ -82,7 +76,6 @@ export interface AppSettings {
   speedtest_endpoints: string[];
   history_retention_days: number;
   sensor_boost_enabled: boolean;
-  overlay_display: OverlayDisplaySettings;
 }
 
 export interface SettingsPatch {
@@ -97,7 +90,6 @@ export interface SettingsPatch {
   speedtest_endpoints?: string[];
   history_retention_days?: number;
   sensor_boost_enabled?: boolean;
-  overlay_display?: Partial<OverlayDisplaySettings>;
 }
 
 export interface SpeedTestConfig {

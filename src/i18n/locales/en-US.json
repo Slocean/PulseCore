@@ -156,10 +156,6 @@
     "glowIntensity": "Glow Intensity",
     "accentColor": "Accent Color",
     "sensorBoost": "Sensor Boost (reserved)",
-    "overlayAdvanced": "Overlay Advanced Display",
-    "overlayShowValues": "Show Values",
-    "overlayShowPercent": "Show Percent",
-    "overlayShowHardware": "Show Model & Brand",
     "modules": "Modules",
     "moduleCpu": "CPU Panel",
     "moduleGpu": "GPU Panel",
@@ -171,7 +167,7 @@
     "save": "Save"
   },
   "overlay": {
-    "title": "Overlay",
+    "title": "PulseCore",
     "subtitle": "PulseCore",
     "configure": "Configure",
     "close": "Close",
@@ -187,6 +183,9 @@
     "showDisk": "Show Disk",
     "showDown": "Show Download",
     "showUp": "Show Upload",
+    "showValues": "Show Values",
+    "showPercent": "Show Percent",
+    "showHardware": "Show Model & Brand",
     "vram": "VRAM",
     "freq": "Frequency"
   }

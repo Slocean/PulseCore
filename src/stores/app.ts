@@ -20,7 +20,13 @@ function emptySnapshot(): TelemetrySnapshot {
   return {
     timestamp: new Date().toISOString(),
     cpu: { usage_pct: 0, frequency_mhz: null, temperature_c: null },
-    gpu: { usage_pct: null, temperature_c: null, memory_used_mb: null, memory_total_mb: null, frequency_mhz: null },
+    gpu: {
+      usage_pct: null,
+      temperature_c: null,
+      memory_used_mb: null,
+      memory_total_mb: null,
+      frequency_mhz: null
+    },
     memory: { used_mb: 0, total_mb: 1, usage_pct: 0 },
     disks: [],
     network: { download_bytes_per_sec: 0, upload_bytes_per_sec: 0, latency_ms: null },
@@ -46,12 +52,7 @@ function defaultSettings(): AppSettings {
     language: 'zh-CN',
     speedtest_endpoints: ['https://speed.hetzner.de/100MB.bin', 'https://proof.ovh.net/files/100Mb.dat'],
     history_retention_days: 30,
-    sensor_boost_enabled: false,
-    overlay_display: {
-      show_values: true,
-      show_percent: true,
-      show_hardware_info: false
-    }
+    sensor_boost_enabled: false
   };
 }
 

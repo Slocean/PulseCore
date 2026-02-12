@@ -74,23 +74,6 @@ pub struct ModuleToggles {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct OverlayDisplaySettings {
-    pub show_values: bool,
-    pub show_percent: bool,
-    pub show_hardware_info: bool,
-}
-
-impl Default for OverlayDisplaySettings {
-    fn default() -> Self {
-        Self {
-            show_values: true,
-            show_percent: true,
-            show_hardware_info: false,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppSettings {
     pub refresh_rate_ms: u64,
     pub low_power_rate_ms: u64,
@@ -103,8 +86,6 @@ pub struct AppSettings {
     pub speedtest_endpoints: Vec<String>,
     pub history_retention_days: i64,
     pub sensor_boost_enabled: bool,
-    #[serde(default)]
-    pub overlay_display: OverlayDisplaySettings,
 }
 
 impl Default for AppSettings {
@@ -130,7 +111,6 @@ impl Default for AppSettings {
             ],
             history_retention_days: 30,
             sensor_boost_enabled: false,
-            overlay_display: OverlayDisplaySettings::default(),
         }
     }
 }
@@ -148,7 +128,6 @@ pub struct SettingsPatch {
     pub speedtest_endpoints: Option<Vec<String>>,
     pub history_retention_days: Option<i64>,
     pub sensor_boost_enabled: Option<bool>,
-    pub overlay_display: Option<OverlayDisplaySettingsPatch>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -158,13 +137,6 @@ pub struct ModuleTogglesPatch {
     pub show_memory: Option<bool>,
     pub show_disk: Option<bool>,
     pub show_network: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct OverlayDisplaySettingsPatch {
-    pub show_values: Option<bool>,
-    pub show_percent: Option<bool>,
-    pub show_hardware_info: Option<bool>,
 }
 
 impl AppSettings {
@@ -200,18 +172,6 @@ impl AppSettings {
         }
         if let Some(v) = patch.sensor_boost_enabled {
             self.sensor_boost_enabled = v;
-        }
-
-        if let Some(display) = patch.overlay_display {
-            if let Some(v) = display.show_values {
-                self.overlay_display.show_values = v;
-            }
-            if let Some(v) = display.show_percent {
-                self.overlay_display.show_percent = v;
-            }
-            if let Some(v) = display.show_hardware_info {
-                self.overlay_display.show_hardware_info = v;
-            }
         }
 
         if let Some(mt) = patch.module_toggles {

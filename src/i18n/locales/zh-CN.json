@@ -156,10 +156,6 @@
     "glowIntensity": "辉光强度",
     "accentColor": "强调色",
     "sensorBoost": "传感器增强（预留）",
-    "overlayAdvanced": "悬浮窗高级显示",
-    "overlayShowValues": "显示具体值",
-    "overlayShowPercent": "显示百分比",
-    "overlayShowHardware": "显示型号与品牌",
     "modules": "模块开关",
     "moduleCpu": "CPU 面板",
     "moduleGpu": "GPU 面板",
@@ -171,7 +167,7 @@
     "save": "保存设置"
   },
   "overlay": {
-    "title": "悬浮监控",
+    "title": "PulseCore",
     "subtitle": "PulseCore",
     "configure": "配置",
     "close": "关闭",
@@ -187,6 +183,9 @@
     "showDisk": "显示磁盘",
     "showDown": "显示下载",
     "showUp": "显示上传",
+    "showValues": "显示具体值",
+    "showPercent": "显示百分比",
+    "showHardware": "显示型号与品牌",
     "vram": "显存",
     "freq": "频率"
   }

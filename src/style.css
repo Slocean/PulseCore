@@ -616,6 +616,7 @@ textarea {
 .overlay-header-actions {
   display: flex;
   gap: 8px;
+  margin-top: -2px;
 }
 
 .overlay-drag {
@@ -648,12 +649,12 @@ textarea {
 .overlay-metric-top {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .overlay-metric-label {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
 }
 
@@ -676,6 +677,26 @@ textarea {
   text-transform: uppercase;
 }
 
+.overlay-metric-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.overlay-metric-detail {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.65);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.overlay-metric-io {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .overlay-hardware {
   margin: -4px 0 10px;
   font-size: 10px;
@@ -684,41 +705,9 @@ textarea {
   text-transform: uppercase;
 }
 
-.overlay-metric-values {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  text-align: right;
-}
-
-.overlay-metric-values--disk {
-  align-items: flex-start;
-}
-
 .overlay-metric-value {
   font-size: 14px;
   font-weight: 700;
-}
-
-.overlay-metric-value-sub {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.65);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.overlay-metric-value-block {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-}
-
-.overlay-metric-value-io {
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.55);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .overlay-glow-cyan {
@@ -1411,6 +1400,7 @@ th {
 .overlay-header-actions {
   display: flex;
   gap: 8px;
+  margin-top: -2px;
 }
 
 .overlay-config {

@@ -3,7 +3,7 @@
     <header>
       <div class="overlay-title">
         <h3>{{ t('overlay.title') }}</h3>
-        <p>{{ t('overlay.subtitle') }} v{{ appVersion }}</p>
+        <p>v{{ appVersion }}</p>
       </div>
       <div class="overlay-header-actions">
         <div class="overlay-drag" @mousedown.stop="startDragging">
@@ -28,7 +28,7 @@
       </div>
     </header>
 
-    <div v-if="overlayDisplay.show_hardware_info" class="overlay-hardware">
+    <div v-if="prefs.showHardwareInfo" class="overlay-hardware">
       {{ hardwareInfoLabel }}
     </div>
 
@@ -57,6 +57,18 @@
         <input v-model="prefs.showUp" type="checkbox" />
         {{ t('overlay.showUp') }}
       </label>
+      <label>
+        <input v-model="prefs.showValues" type="checkbox" />
+        {{ t('overlay.showValues') }}
+      </label>
+      <label>
+        <input v-model="prefs.showPercent" type="checkbox" />
+        {{ t('overlay.showPercent') }}
+      </label>
+      <label>
+        <input v-model="prefs.showHardwareInfo" type="checkbox" />
+        {{ t('overlay.showHardware') }}
+      </label>
     </div>
 
     <div class="overlay-metrics">
@@ -64,14 +76,14 @@
         <div class="overlay-metric-top">
           <div class="overlay-metric-label">
             <span class="material-symbols-outlined overlay-icon overlay-icon--cpu">memory</span>
-            <span class="overlay-metric-name">{{ t('overlay.cpu') }}</span>
+            <div class="overlay-metric-text">
+              <span class="overlay-metric-name">{{ t('overlay.cpu') }}</span>
+              <span v-if="prefs.showValues" class="overlay-metric-detail">{{ cpuDetailLabel }}</span>
+            </div>
           </div>
-          <div class="overlay-metric-values">
-            <span v-if="overlayDisplay.show_values" class="overlay-metric-value-sub">{{ cpuDetailLabel }}</span>
-            <span v-if="overlayDisplay.show_percent" class="overlay-metric-value overlay-glow-cyan">
-              {{ cpuPercentLabel }}
-            </span>
-          </div>
+          <span v-if="prefs.showPercent" class="overlay-metric-value overlay-glow-cyan">
+            {{ cpuPercentLabel }}
+          </span>
         </div>
         <div class="overlay-progress">
           <span
@@ -84,14 +96,14 @@
         <div class="overlay-metric-top">
           <div class="overlay-metric-label">
             <span class="material-symbols-outlined overlay-icon overlay-icon--gpu">developer_board</span>
-            <span class="overlay-metric-name">{{ t('overlay.gpu') }}</span>
+            <div class="overlay-metric-text">
+              <span class="overlay-metric-name">{{ t('overlay.gpu') }}</span>
+              <span v-if="prefs.showValues" class="overlay-metric-detail">{{ gpuDetailLabel }}</span>
+            </div>
           </div>
-          <div class="overlay-metric-values">
-            <span v-if="overlayDisplay.show_values" class="overlay-metric-value-sub">{{ gpuDetailLabel }}</span>
-            <span v-if="overlayDisplay.show_percent" class="overlay-metric-value overlay-glow-pink">
-              {{ gpuPercentLabel }}
-            </span>
-          </div>
+          <span v-if="prefs.showPercent" class="overlay-metric-value overlay-glow-pink">
+            {{ gpuPercentLabel }}
+          </span>
         </div>
         <div class="overlay-progress">
           <span
@@ -104,14 +116,14 @@
         <div class="overlay-metric-top">
           <div class="overlay-metric-label">
             <span class="material-symbols-outlined overlay-icon overlay-icon--cpu">memory_alt</span>
-            <span class="overlay-metric-name">{{ t('overlay.memory') }}</span>
+            <div class="overlay-metric-text">
+              <span class="overlay-metric-name">{{ t('overlay.memory') }}</span>
+              <span v-if="prefs.showValues" class="overlay-metric-detail">{{ memoryUsageLabel }}</span>
+            </div>
           </div>
-          <div class="overlay-metric-values">
-            <span v-if="overlayDisplay.show_values" class="overlay-metric-value-sub">{{ memoryUsageLabel }}</span>
-            <span v-if="overlayDisplay.show_percent" class="overlay-metric-value overlay-glow-cyan">
-              {{ memoryPercentLabel }}
-            </span>
-          </div>
+          <span v-if="prefs.showPercent" class="overlay-metric-value overlay-glow-cyan">
+            {{ memoryPercentLabel }}
+          </span>
         </div>
         <div class="overlay-progress">
           <span
@@ -125,17 +137,17 @@
           <div class="overlay-metric-top">
             <div class="overlay-metric-label">
               <span class="material-symbols-outlined overlay-icon overlay-icon--cpu">hard_drive</span>
-              <span class="overlay-metric-name">{{ disk.name }}</span>
-            </div>
-            <div class="overlay-metric-values overlay-metric-values--disk">
-              <div v-if="overlayDisplay.show_values" class="overlay-metric-value-block">
-                <span class="overlay-metric-value-sub">{{ diskUsageLabel(disk) }}</span>
-                <span class="overlay-metric-value-io">{{ diskIoLabel(disk) }}</span>
+              <div class="overlay-metric-text">
+                <span class="overlay-metric-name">{{ disk.name }}</span>
+                <span v-if="prefs.showValues" class="overlay-metric-detail">
+                  {{ diskUsageLabel(disk) }}
+                </span>
+                <span v-if="prefs.showValues" class="overlay-metric-io">{{ diskIoLabel(disk) }}</span>
               </div>
-              <span v-if="overlayDisplay.show_percent" class="overlay-metric-value overlay-glow-pink">
-                {{ diskPercentLabel(disk) }}
-              </span>
             </div>
+            <span v-if="prefs.showPercent" class="overlay-metric-value overlay-glow-pink">
+              {{ diskPercentLabel(disk) }}
+            </span>
           </div>
           <div class="overlay-progress">
             <span
@@ -199,13 +211,15 @@ interface OverlayPrefs {
   showDisk: boolean;
   showDown: boolean;
   showUp: boolean;
+  showValues: boolean;
+  showPercent: boolean;
+  showHardwareInfo: boolean;
 }
 
 const { t } = useI18n();
 const store = useAppStore();
 const appVersion = packageJson.version;
 const snapshot = computed(() => store.snapshot);
-const overlayDisplay = computed(() => store.settings.overlay_display);
 const showConfig = ref(false);
 const startedAt = Date.now();
 const uptimeLabel = ref('00:00:00');
@@ -289,7 +303,10 @@ function loadPrefs(): OverlayPrefs {
     showMemory: true,
     showDisk: true,
     showDown: true,
-    showUp: true
+    showUp: true,
+    showValues: true,
+    showPercent: true,
+    showHardwareInfo: false
   };
 
   try {
@@ -304,7 +321,10 @@ function loadPrefs(): OverlayPrefs {
       showMemory: parsed.showMemory ?? fallback.showMemory,
       showDisk: parsed.showDisk ?? fallback.showDisk,
       showDown: parsed.showDown ?? fallback.showDown,
-      showUp: parsed.showUp ?? fallback.showUp
+      showUp: parsed.showUp ?? fallback.showUp,
+      showValues: parsed.showValues ?? fallback.showValues,
+      showPercent: parsed.showPercent ?? fallback.showPercent,
+      showHardwareInfo: parsed.showHardwareInfo ?? fallback.showHardwareInfo
     };
   } catch {
     return fallback;

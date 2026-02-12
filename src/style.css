@@ -22,13 +22,17 @@
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: "Inter", "Segoe UI", sans-serif;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
   color: var(--text);
   background: var(--bg);
 }
 
 .material-symbols-outlined {
-  font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 24;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 500,
+    'GRAD' 0,
+    'opsz' 24;
 }
 
 .app-root {
@@ -51,7 +55,8 @@ body {
   pointer-events: none;
   opacity: 0.3;
   background-size: 40px 40px;
-  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
   mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
 }
@@ -269,7 +274,7 @@ textarea {
 }
 
 .gauge-card::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
@@ -541,30 +546,18 @@ textarea {
 }
 
 .overlay-widget--cyber {
-  border: 1px solid rgba(0, 242, 255, 0.22);
-  box-shadow: 0 0 26px rgba(0, 0, 0, 0.45);
+  background: transparent;
 }
 
 .overlay-widget--cyber::before,
 .overlay-widget--cyber::after {
-  content: "";
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  border-color: var(--cyan);
-  border-style: solid;
+  display: none;
 }
 
 .overlay-widget--cyber::before {
-  top: -1px;
-  left: -1px;
-  border-width: 2px 0 0 2px;
 }
 
 .overlay-widget--cyber::after {
-  bottom: -1px;
-  right: -1px;
-  border-width: 0 2px 2px 0;
 }
 
 .overlay-widget header {
@@ -675,7 +668,7 @@ textarea {
 }
 
 .overlay-progress::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -968,7 +961,7 @@ td {
 .hardware-tile header small {
   font-size: 10px;
   letter-spacing: 0.22em;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .hardware-tile h3 {
@@ -1003,8 +996,8 @@ td {
   gap: 12px;
   padding: 10px 12px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(0,0,0,0.24);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.24);
 }
 
 .hardware-list li .material-symbols-outlined {
@@ -1031,11 +1024,12 @@ td {
 
 .preview-canvas {
   border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(var(--card-rgb), var(--preview-glass, 0.75));
   min-height: 180px;
   padding: 12px;
-  box-shadow: 0 0 calc(30px * var(--preview-glow, 0.4)) color-mix(in srgb, var(--preview-accent, #2b6cee) 35%, transparent);
+  box-shadow: 0 0 calc(30px * var(--preview-glow, 0.4))
+    color-mix(in srgb, var(--preview-accent, #2b6cee) 35%, transparent);
 }
 
 .preview-top {
@@ -1060,8 +1054,8 @@ td {
 .preview-grid div {
   height: 56px;
   border-radius: 10px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .preview-meta h3 {
@@ -1091,8 +1085,8 @@ td {
   align-items: center;
   padding: 10px 12px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(0,0,0,0.24);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.24);
 }
 
 .inline-check {
@@ -1179,7 +1173,9 @@ td {
   opacity: 0;
   transform: translateY(-8px);
   pointer-events: none;
-  transition: opacity 180ms ease, transform 180ms ease;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
 }
 
 .app-root--bigscreen:hover .bigscreen-exit,
@@ -1262,7 +1258,7 @@ body,
 }
 
 body {
-  font-family: "Inter", "Microsoft YaHei UI", "PingFang SC", Arial, sans-serif;
+  font-family: 'Inter', 'Microsoft YaHei UI', 'PingFang SC', Arial, sans-serif;
   font-size: 14px;
   font-weight: 500;
   line-height: 1.5;
@@ -1529,7 +1525,7 @@ th {
 }
 
 .mono {
-  font-family: "JetBrains Mono", "SFMono-Regular", monospace;
+  font-family: 'JetBrains Mono', 'SFMono-Regular', monospace;
 }
 
 .dashboard-page {

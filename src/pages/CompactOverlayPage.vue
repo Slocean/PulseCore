@@ -1,5 +1,5 @@
 <template>
-  <section class="overlay-widget overlay-widget--cyber glass-panel">
+  <section class="overlay-widget overlay-widget--cyber">
     <header data-tauri-drag-region>
       <div class="overlay-title">
         <h3>{{ t("overlay.title") }}</h3>
